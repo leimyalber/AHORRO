@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Página de ahorro de [Nombre de tu Empresa]. Nuestro objetivo es alcanzar 1 millón de pesos.">
+    <title>Página de Ahorro - [R7]</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #249900;
+            color: #fff;
+            padding: 1px;
+            text-align: center;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .goal-bar {
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            height: 40px;
+            margin-top: 20px;
+        }
+        .goal-bar span {
+            display: block;
+            height: 100%;
+            background-color: #4caf50;
+            text-align: center;
+            color: #fff;
+            line-height: 40px;
+            font-size: 18px;
+        }
+        input, button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        input[type="number"] {
+            width: calc(100% - 22px);
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn, .edit-btn {
+            cursor: pointer;
+            color: #ff5722;
+            border: none;
+            background: none;
+            font-weight: bold;
+        }
+        footer {
+            background-color: #157e00;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        
+        <h1>R7</h1>
+    </header>
+    <div class="container">
+        <h2>Objetivo de Ahorro</h2>
+        <p>En [R7], nuestro objetivo es alcanzar un millón de pesos. A continuación, mostramos nuestro progreso hacia este objetivo.</p>
+        <div class="goal-bar">
+            <span id="progress-bar" style="width: 0%;">$0 (0%)</span>
+        </div>
+        <p>Ingrese la cantidad y la fecha de aportación:</p>
+        <form id="donation-form">
+            <input type="number" id="amount" placeholder="Cantidad en pesos" required>
+            <input type="date" id="date" required>
+            <button type="button" onclick="addDonation()">Aceptar</button>
+        </form>
+        <ul id="donation-list"></ul>
+    </div>
+    <footer>
+        <p>&copy; 2024 [Nombre de tu Empresa]. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        const goalAmount = 1000000; // 1 millón de pesos
+        let currentAmount = 0;
+        let donations = [];
+
+        function loadData() {
+            const storedDonations = localStorage.getItem('donations');
+            const storedAmount = localStorage.getItem('currentAmount');
+
+            if (storedDonations) {
+                donations = JSON.parse(storedDonations);
+            }
+            if (storedAmount) {
+                currentAmount = parseFloat(storedAmount);
+            }
+            updateProgress();
+            renderDonations();
+        }
+
+        function saveData() {
+            localStorage.setItem('donations', JSON.stringify(donations));
+            localStorage.setItem('currentAmount', currentAmount);
+        }
+
+        function updateProgress() {
+            const progressPercentage = (currentAmount / goalAmount) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+            document.getElementById('progress-bar').textContent = `$${currentAmount.toFixed(2)} (${progressPercentage.toFixed(2)}%)`;
+        }
+
+        function addDonation() {
+            const amountInput = document.getElementById('amount');
+            const dateInput = document.getElementById('date');
+
+            const amount = parseFloat(amountInput.value);
+            const date = dateInput.value;
+
+            if (!amount || isNaN(amount)) {
+                alert('Por favor, ingrese una cantidad válida.');
+                return;
+            }
+            if (!date) {
+                alert('Por favor, seleccione una fecha válida.');
+                return;
+            }
+
+            donations.push({ amount, date });
+            currentAmount += amount;
+            if (currentAmount > goalAmount) currentAmount = goalAmount;
+
+            updateProgress();
+            renderDonations();
+            saveData();
+
+            amountInput.value = '';
+            dateInput.value = '';
+        }
+
+        function removeDonation(index) {
+            currentAmount -= donations[index].amount;
+            donations.splice(index, 1);
+            if (currentAmount < 0) currentAmount = 0;
+
+            updateProgress();
+            renderDonations();
+            saveData();
+        }
+
+        function renderDonations() {
+            const list = document.getElementById('donation-list');
+            list.innerHTML = '';
+            donations.forEach((donation, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${donation.date}: $${donation.amount.toFixed(2)}`;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Eliminar';
+                removeBtn.className = 'delete-btn';
+                removeBtn.onclick = () => removeDonation(index);
+
+                li.appendChild(removeBtn);
+                list.appendChild(li);
+            });
+        }
+
+        // Load data when the page is loaded
+        window.onload = loadData;
+    </script>
+</body>
+</html>
